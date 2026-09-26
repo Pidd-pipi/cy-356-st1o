@@ -28,18 +28,18 @@ type CommentRequest struct {
 
 // DiaryOutDTO 种植日记输出。
 type DiaryOutDTO struct {
-	ID         uint             `json:"id"`
-	PlanID     uint             `json:"plan_id"`
-	PlanCode   string           `json:"plan_code"`
-	UserID     uint             `json:"user_id"`
-	Username   string           `json:"username"`
-	Nickname   string           `json:"nickname"`
-	ActionType string           `json:"action_type"`
-	Title      string           `json:"title"`
-	Content    string           `json:"content"`
-	ImageURL   string           `json:"image_url"`
-	LikeCount  int              `json:"like_count"`
-	CreatedAt  string           `json:"created_at"`
+	ID         uint              `json:"id"`
+	PlanID     uint              `json:"plan_id"`
+	PlanCode   string            `json:"plan_code"`
+	UserID     uint              `json:"user_id"`
+	Username   string            `json:"username"`
+	Nickname   string            `json:"nickname"`
+	ActionType string            `json:"action_type"`
+	Title      string            `json:"title"`
+	Content    string            `json:"content"`
+	ImageURL   string            `json:"image_url"`
+	LikeCount  int               `json:"like_count"`
+	CreatedAt  string            `json:"created_at"`
 	Comments   []DiaryCommentDTO `json:"comments,omitempty"`
 }
 

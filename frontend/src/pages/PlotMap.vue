@@ -39,10 +39,11 @@
       <el-table-column label="认养人" width="120">
         <template #default="{ row }">{{ row.adopter?.nickname || row.adopter?.username || '-' }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="220">
+      <el-table-column label="操作" width="300">
         <template #default="{ row }">
           <el-button v-if="row.status === 'available'" type="success" size="small" @click="adopt(row)">认养</el-button>
           <el-button v-if="canRelease(row)" type="warning" size="small" @click="release(row)">释放</el-button>
+          <el-button v-if="row.status === 'adopted' || row.status === 'maintaining'" size="small" @click="openMaintenance(row)">养护记录</el-button>
         </template>
       </el-table-column>
     </DataTable>
@@ -76,6 +77,7 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { usePlotStore } from '@/stores/plot'
 import { createPlot, type Plot } from '@/api/plot'
@@ -88,6 +90,7 @@ import { formatArea, clamp } from '@/utils/format'
 
 const store = usePlotStore()
 const pagination = usePagination()
+const router = useRouter()
 const { user, role, isAdmin } = useAuth()
 
 const createVisible = ref(false)
@@ -107,6 +110,7 @@ function mapY(p: Plot) {
 function colorOf(status: string) {
   if (status === 'available') return '#67c23a'
   if (status === 'adopted') return '#e6a23c'
+  if (status === 'maintaining') return '#f56c6c'
   return '#909399'
 }
 
@@ -143,6 +147,10 @@ async function release(row: Plot) {
   await releasePlot(row.id)
   ElMessage.success('地块已释放')
   await fetch()
+}
+
+function openMaintenance(row: Plot) {
+  router.push({ path: '/maintenance', query: { plot_id: String(row.id) } })
 }
 
 function openCreate() {

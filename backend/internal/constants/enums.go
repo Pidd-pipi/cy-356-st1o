@@ -25,9 +25,10 @@ const (
 type PlotStatus string
 
 const (
-	PlotStatusAvailable PlotStatus = "available" // 空闲可认养
-	PlotStatusAdopted   PlotStatus = "adopted"   // 已认养
-	PlotStatusHarvested PlotStatus = "harvested" // 已收成待释放
+	PlotStatusAvailable   PlotStatus = "available"   // 空闲可认养
+	PlotStatusAdopted     PlotStatus = "adopted"     // 已认养
+	PlotStatusHarvested   PlotStatus = "harvested"   // 已收成待释放
+	PlotStatusMaintaining PlotStatus = "maintaining" // 土壤养护中（暂不可种植）
 )
 
 // SoilType 土壤类型
@@ -116,6 +117,29 @@ type PostStatus string
 const (
 	PostStatusPublished PostStatus = "published"
 	PostStatusRemoved   PostStatus = "removed"
+)
+
+// MaintenanceStatus 土壤养护单状态机：pending -> processing -> completed，未完成可 cancelled
+type MaintenanceStatus string
+
+const (
+	MaintenancePending    MaintenanceStatus = "pending"    // 待处理（已登记采样）
+	MaintenanceProcessing MaintenanceStatus = "processing" // 养护处理中
+	MaintenanceCompleted  MaintenanceStatus = "completed"  // 已完成（地块恢复可种植）
+	MaintenanceCancelled  MaintenanceStatus = "cancelled"  // 已取消（地块恢复可种植）
+)
+
+// FertilityIssue 土壤肥力问题类型
+type FertilityIssue string
+
+const (
+	FertilityAcidic       FertilityIssue = "acidic"        // 偏酸
+	FertilityAlkaline     FertilityIssue = "alkaline"      // 偏碱
+	FertilityNutrientLow  FertilityIssue = "nutrient_low"  // 养分不足
+	FertilitySalinized    FertilityIssue = "salinized"     // 土壤板结盐渍化
+	FertilityOrganicLow   FertilityIssue = "organic_low"   // 有机质偏低
+	FertilityDrainagePoor FertilityIssue = "drainage_poor" // 排水不良
+	FertilityHealthy      FertilityIssue = "healthy"       // 土壤健康
 )
 
 // 季节推荐作物表（静态推荐数据，服务层读取）

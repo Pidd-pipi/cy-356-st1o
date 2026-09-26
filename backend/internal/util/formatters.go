@@ -43,6 +43,8 @@ func PlotStatusText(s string) string {
 		return "已认养"
 	case constants.PlotStatusHarvested:
 		return "待释放"
+	case constants.PlotStatusMaintaining:
+		return "养护中"
 	default:
 		return "未知状态"
 	}
@@ -185,6 +187,44 @@ func PostStatusText(s string) string {
 		return "已删除"
 	default:
 		return "未知状态"
+	}
+}
+
+// MaintenanceStatusText 土壤养护单状态中文文本。
+func MaintenanceStatusText(s string) string {
+	switch constants.MaintenanceStatus(s) {
+	case constants.MaintenancePending:
+		return "待处理"
+	case constants.MaintenanceProcessing:
+		return "处理中"
+	case constants.MaintenanceCompleted:
+		return "已完成"
+	case constants.MaintenanceCancelled:
+		return "已取消"
+	default:
+		return "未知状态"
+	}
+}
+
+// FertilityIssueText 土壤肥力问题中文文本。
+func FertilityIssueText(s string) string {
+	switch constants.FertilityIssue(s) {
+	case constants.FertilityAcidic:
+		return "土壤偏酸"
+	case constants.FertilityAlkaline:
+		return "土壤偏碱"
+	case constants.FertilityNutrientLow:
+		return "养分不足"
+	case constants.FertilitySalinized:
+		return "板结盐渍化"
+	case constants.FertilityOrganicLow:
+		return "有机质偏低"
+	case constants.FertilityDrainagePoor:
+		return "排水不良"
+	case constants.FertilityHealthy:
+		return "土壤健康"
+	default:
+		return "未知问题"
 	}
 }
 

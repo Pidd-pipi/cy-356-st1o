@@ -9,7 +9,7 @@
     </el-row>
 
     <el-row :gutter="16" style="margin-top: 16px">
-      <el-col :span="8">
+      <el-col :span="6">
         <el-card shadow="never">
           <template #header>地块状态分布</template>
           <div v-for="(label, key) in PlotStatusMeta" :key="key" class="bar-row">
@@ -19,7 +19,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="8">
+      <el-col :span="6">
         <el-card shadow="never">
           <template #header>种植计划状态</template>
           <div v-for="(label, key) in PlanStatusMeta" :key="key" class="bar-row">
@@ -29,7 +29,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="8">
+      <el-col :span="6">
         <el-card shadow="never">
           <template #header>农友社区动态</template>
           <div v-for="(label, key) in PostTypeText" :key="key" class="bar-row">
@@ -37,6 +37,17 @@
             <div class="bar-track"><div class="bar-fill" :style="{ width: percent(postsByType[key]) + '%' }" /></div>
             <span class="bar-value">{{ postsByType[key] || 0 }}</span>
           </div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card shadow="never">
+          <template #header>土壤养护单</template>
+          <div v-for="(label, key) in MaintenanceStatusMeta" :key="key" class="bar-row">
+            <span class="bar-label">{{ label.label }}</span>
+            <div class="bar-track"><div class="bar-fill" :style="{ width: percent(maintenanceByStatus[key]) + '%' }" /></div>
+            <span class="bar-value">{{ maintenanceByStatus[key] || 0 }}</span>
+          </div>
+          <EmptyState v-if="!maintenanceTotal" description="暂无养护单" />
         </el-card>
       </el-col>
     </el-row>
@@ -73,7 +84,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { getDashboardStats, type DashboardStats } from '@/api/dashboard'
 import { getRecommendations, getHarvestReminders, type PlantingPlan } from '@/api/plantingPlan'
-import { PlotStatusMeta, PlanStatusMeta, PostTypeText } from '@/constants'
+import { PlotStatusMeta, PlanStatusMeta, PostTypeText, MaintenanceStatusMeta } from '@/constants'
 import StatusBadge from '@/components/StatusBadge.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import { formatDate } from '@/utils/format'
@@ -88,6 +99,8 @@ const plansByStatusCount = computed(() => Object.values(stats.value?.plans_by_st
 const plotsByStatus = computed(() => stats.value?.plots_by_status || {})
 const plansByStatus = computed(() => stats.value?.plans_by_status || {})
 const postsByType = computed(() => stats.value?.posts_by_type || {})
+const maintenanceByStatus = computed(() => stats.value?.maintenance_by_status || {})
+const maintenanceTotal = computed(() => Object.values(maintenanceByStatus.value).reduce((a, b) => a + b, 0))
 
 function percent(v?: number) {
   const max = 10

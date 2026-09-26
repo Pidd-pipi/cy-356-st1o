@@ -27,6 +27,7 @@ var Models = []interface{}{
 	&model.DiaryComment{},
 	&model.CommunityPost{},
 	&model.CommunityComment{},
+	&model.MaintenanceOrder{},
 	&model.AuditLog{},
 }
 
@@ -48,6 +49,13 @@ func Connect(cfg *config.Config, logger *slog.Logger) (*gorm.DB, error) {
 
 	if err := db.AutoMigrate(Models...); err != nil {
 		return nil, err
+	}
+	// 同一地块只能存在一张未完成（pending/processing）的养护单：PostgreSQL 部分唯一索引兜底。
+	if db.Dialector.Name() == "postgres" {
+		if err := db.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS uni_maintenance_active_plot
+			ON maintenance_orders (plot_id) WHERE status IN ('pending', 'processing')`).Error; err != nil {
+			return nil, err
+		}
 	}
 	logger.Info(constants.LogDBMigrateDone, "tables", len(Models))
 
@@ -146,6 +154,25 @@ func Seed(db *gorm.DB, logger *slog.Logger) error {
 		if err := db.Create(&seedComments[i]).Error; err != nil {
 			return err
 		}
+	}
+
+	// 土壤养护历史示例（已认养地块 P-002 上一张已完成的养护单，地块仍保持 adopted）
+	adminID := seedUsers[0].ID
+	sampled := now.AddDate(0, 0, -40)
+	completed := now.AddDate(0, 0, -33)
+	seedMaintenance := model.MaintenanceOrder{
+		PlotID:         seedPlots[1].ID,
+		OperatorID:     adminID,
+		SampledAt:      &sampled,
+		PHValue:        5.4,
+		FertilityIssue: string(constants.FertilityAcidic),
+		Suggestion:     "撒施生石灰调节 pH，增施腐熟有机肥，深翻 20cm 后静置一周。",
+		Status:         string(constants.MaintenanceCompleted),
+		ActualMeasures: "已撒生石灰 2kg、腐熟羊粪 5kg，深翻浇透水并静置 7 天复测 pH 6.5。",
+		CompletedAt:    &completed,
+	}
+	if err := db.Create(&seedMaintenance).Error; err != nil {
+		return err
 	}
 
 	logger.Info(constants.LogDBSeedDone, "users", len(seedUsers), "plots", len(seedPlots))

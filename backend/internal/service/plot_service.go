@@ -180,6 +180,26 @@ func (s *PlotService) MarkHarvested(tx *gorm.DB, plotID uint) error {
 	return s.plotRepo.UpdateWithTx(tx, plot)
 }
 
+// MarkMaintaining 登记养护单后将地块置为养护中（maintaining），养护期间禁止新建种植计划。
+func (s *PlotService) MarkMaintaining(tx *gorm.DB, plotID uint) error {
+	plot, err := s.plotRepo.FindByIDForUpdate(tx, plotID)
+	if err != nil {
+		return err
+	}
+	plot.Status = string(constants.PlotStatusMaintaining)
+	return s.plotRepo.UpdateWithTx(tx, plot)
+}
+
+// RestoreAdopted 养护单完成/取消后将地块恢复为已认养（adopted），认养关系不变。
+func (s *PlotService) RestoreAdopted(tx *gorm.DB, plotID uint) error {
+	plot, err := s.plotRepo.FindByIDForUpdate(tx, plotID)
+	if err != nil {
+		return err
+	}
+	plot.Status = string(constants.PlotStatusAdopted)
+	return s.plotRepo.UpdateWithTx(tx, plot)
+}
+
 // CountByStatus 地块状态统计（仪表盘复用）。
 func (s *PlotService) CountByStatus() (map[string]int64, error) {
 	return s.plotRepo.CountByStatus()

@@ -14,9 +14,9 @@ import (
 
 // AuthService 认证服务。
 type AuthService struct {
-	userRepo repository.UserRepository
-	logger   *slog.Logger
-	jwtSecret string
+	userRepo    repository.UserRepository
+	logger      *slog.Logger
+	jwtSecret   string
 	expireHours int
 }
 

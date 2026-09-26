@@ -17,19 +17,20 @@ import (
 
 // Router 路由装配器。
 type Router struct {
-	cfg   *config.Config
+	cfg    *config.Config
 	logger *slog.Logger
-	rdb   *redis.Client
+	rdb    *redis.Client
 
-	authHandler     *handler.AuthHandler
-	userHandler     *handler.UserHandler
-	plotHandler     *handler.PlotHandler
-	planHandler     *handler.PlantingPlanHandler
-	harvestHandler  *handler.HarvestHandler
-	diaryHandler    *handler.DiaryHandler
-	communityHandler *handler.CommunityHandler
-	auditHandler    *handler.AuditHandler
-	statsHandler    *handler.StatsHandler
+	authHandler        *handler.AuthHandler
+	userHandler        *handler.UserHandler
+	plotHandler        *handler.PlotHandler
+	planHandler        *handler.PlantingPlanHandler
+	harvestHandler     *handler.HarvestHandler
+	diaryHandler       *handler.DiaryHandler
+	communityHandler   *handler.CommunityHandler
+	auditHandler       *handler.AuditHandler
+	statsHandler       *handler.StatsHandler
+	maintenanceHandler *handler.MaintenanceHandler
 
 	auditService middleware.AuditWriter
 	hub          *ws.Hub
@@ -49,6 +50,7 @@ func New(
 	communityHandler *handler.CommunityHandler,
 	auditHandler *handler.AuditHandler,
 	statsHandler *handler.StatsHandler,
+	maintenanceHandler *handler.MaintenanceHandler,
 	auditService middleware.AuditWriter,
 	hub *ws.Hub,
 ) *Router {
@@ -57,7 +59,8 @@ func New(
 		authHandler: authHandler, userHandler: userHandler, plotHandler: plotHandler,
 		planHandler: planHandler, harvestHandler: harvestHandler, diaryHandler: diaryHandler,
 		communityHandler: communityHandler, auditHandler: auditHandler, statsHandler: statsHandler,
-		auditService: auditService, hub: hub,
+		maintenanceHandler: maintenanceHandler,
+		auditService:       auditService, hub: hub,
 	}
 }
 
@@ -85,6 +88,7 @@ func (r *Router) Build() *gin.Engine {
 	r.registerAuth(v1)
 	r.registerUsers(v1)
 	r.registerPlots(v1)
+	r.registerMaintenance(v1)
 	r.registerPlantingPlans(v1)
 	r.registerHarvests(v1)
 	r.registerDiaries(v1)

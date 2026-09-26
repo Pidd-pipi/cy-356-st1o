@@ -14,6 +14,7 @@ tags:
   - name: community-posts
   - name: users
   - name: audit-logs
+  - name: maintenance-orders
 paths:
   /auth/register:
     post:
@@ -53,6 +54,45 @@ paths:
     post:
       tags: [plots]
       summary: 释放地块
+      responses: { '200': { description: 成功 } }
+  /plots/{id}/maintenances:
+    get:
+      tags: [maintenance-orders]
+      summary: 按地块查询土壤养护历史（认养人限本人地块）
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses: { '200': { description: 成功 } }
+  /maintenance-orders:
+    get:
+      tags: [maintenance-orders]
+      summary: 养护单分页列表（管理员全部；认养人需带 plot_id 且仅限本人地块）
+      parameters:
+        - { name: plot_id, in: query, required: false, schema: { type: integer } }
+        - { name: status, in: query, required: false, schema: { type: string, enum: [pending, processing, completed, cancelled] } }
+      responses: { '200': { description: 成功 } }
+    post:
+      tags: [maintenance-orders]
+      summary: 管理员登记养护单（采样日期、pH、肥力问题、处理建议；地块进入养护中）
+      responses: { '200': { description: 成功 } }
+  /maintenance-orders/{id}:
+    get:
+      tags: [maintenance-orders]
+      summary: 养护单详情（认养人可查看本人地块养护进度）
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses: { '200': { description: 成功 } }
+  /maintenance-orders/{id}/start:
+    post:
+      tags: [maintenance-orders]
+      summary: 开始处理（pending -> processing，管理员）
+      responses: { '200': { description: 成功 } }
+  /maintenance-orders/{id}/complete:
+    post:
+      tags: [maintenance-orders]
+      summary: 完成养护（processing -> completed，填写实际措施与完成日期，地块恢复可种植，管理员）
+      responses: { '200': { description: 成功 } }
+  /maintenance-orders/{id}/cancel:
+    post:
+      tags: [maintenance-orders]
+      summary: 取消养护（未完成 -> cancelled，必须填写取消原因，地块恢复可种植，管理员）
       responses: { '200': { description: 成功 } }
   /planting-plans:
     get:

@@ -5,6 +5,7 @@ export interface DashboardStats {
   plots_by_status: Record<string, number>
   plans_by_status: Record<string, number>
   posts_by_type: Record<string, number>
+  maintenance_by_status: Record<string, number>
   total_diaries: number
   total_harvests: number
 }

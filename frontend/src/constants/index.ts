@@ -7,11 +7,12 @@ export const RoleText: Record<string, string> = {
   citizen: '城市居民'
 }
 
-export type PlotStatus = 'available' | 'adopted' | 'harvested'
+export type PlotStatus = 'available' | 'adopted' | 'harvested' | 'maintaining'
 export const PlotStatusMeta: Record<string, { label: string; type: 'success' | 'warning' | 'info' | 'danger' | 'primary' }> = {
   available: { label: '空闲可认养', type: 'success' },
   adopted: { label: '已认养', type: 'warning' },
-  harvested: { label: '待释放', type: 'info' }
+  harvested: { label: '待释放', type: 'info' },
+  maintaining: { label: '养护中', type: 'danger' }
 }
 
 export type PlanStatus = 'planned' | 'planting' | 'growing' | 'harvesting' | 'completed'
@@ -89,4 +90,39 @@ export const SunlightText: Record<string, string> = {
   full: '全日照',
   partial: '半日照',
   shade: '遮阴'
+}
+
+// 土壤养护单状态机（与后端 MaintenanceStatusTransitions 对应，驱动按钮显隐）
+export type MaintenanceStatus = 'pending' | 'processing' | 'completed' | 'cancelled'
+export const MaintenanceStatusMeta: Record<string, { label: string; type: 'success' | 'warning' | 'info' | 'danger' | 'primary' }> = {
+  pending: { label: '待处理', type: 'warning' },
+  processing: { label: '处理中', type: 'primary' },
+  completed: { label: '已完成', type: 'success' },
+  cancelled: { label: '已取消', type: 'info' }
+}
+// 认养人视角的进度阶段（待处理 → 处理中 → 已结束）
+export const MaintenanceProgressStage: Record<string, number> = {
+  pending: 1,
+  processing: 2,
+  completed: 3,
+  cancelled: 3
+}
+
+// 肥力问题类型（与后端 FertilityIssue 对应）
+export type FertilityIssue =
+  | 'acidic'
+  | 'alkaline'
+  | 'nutrient_low'
+  | 'salinized'
+  | 'organic_low'
+  | 'drainage_poor'
+  | 'healthy'
+export const FertilityIssueText: Record<string, string> = {
+  acidic: '土壤偏酸',
+  alkaline: '土壤偏碱',
+  nutrient_low: '养分不足',
+  salinized: '板结盐渍化',
+  organic_low: '有机质偏低',
+  drainage_poor: '排水不良',
+  healthy: '土壤健康'
 }

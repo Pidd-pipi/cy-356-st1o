@@ -5,6 +5,15 @@
       <el-button type="primary" @click="openCreate">+ 制定种植计划</el-button>
     </div>
 
+    <el-alert
+      v-if="maintainingPlots.length"
+      type="warning"
+      :closable="false"
+      show-icon
+      style="margin: 12px 0"
+      :title="`地块 ${maintainingPlots.map((p) => p.code).join('、')} 正在土壤养护中，处理期间不能创建新的种植计划，养护完成后自动恢复。`"
+    />
+
     <el-card shadow="never" style="margin-bottom: 16px">
       <template #header>🌿 当季作物推荐（按季节）</template>
       <el-radio-group v-model="season" @change="loadRecommendations">
@@ -77,6 +86,7 @@ import { usePlanStore } from '@/stores/plantingPlan'
 import { type PlantingPlan } from '@/api/plantingPlan'
 import { listPlots } from '@/api/plot'
 import { usePagination } from '@/hooks/usePagination'
+import { useAuth } from '@/hooks/useAuth'
 import DataTable from '@/components/DataTable.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
 import { CropTypeText, SeasonText, PlanStatusMeta, PlanStatusNext, PlanStatusActions } from '@/constants'
@@ -84,15 +94,33 @@ import { formatDate } from '@/utils/format'
 
 const store = usePlanStore()
 const pagination = usePagination()
+const { user } = useAuth()
 const season = ref<string>('spring')
 const recommendations = ref<string[]>([])
 const createVisible = ref(false)
 const creating = ref(false)
 const myAdoptedPlots = ref<Array<{ id: number; code: string; name: string }>>([])
+const maintainingPlots = ref<Array<{ id: number; code: string; name: string }>>([])
 const createForm = reactive({ plot_id: undefined as number | undefined, crop_name: '', crop_type: 'vegetable', season: 'spring', notes: '' })
 
 async function fetch() {
   await store.fetchPlans({ page: pagination.page.value, page_size: pagination.size.value })
+}
+
+// 加载当前认养人的地块，标记处于土壤养护中的地块（养护期间不能新建计划）
+async function loadMyPlots() {
+  try {
+    const data = await listPlots({ page: 1, page_size: 100 })
+    myAdoptedPlots.value = data.list
+      .filter((p) => p.status === 'adopted' && p.adopter_id === user.value?.id)
+      .map((p) => ({ id: p.id, code: p.code, name: p.name }))
+    maintainingPlots.value = data.list
+      .filter((p) => p.status === 'maintaining' && p.adopter_id === user.value?.id)
+      .map((p) => ({ id: p.id, code: p.code, name: p.name }))
+  } catch {
+    myAdoptedPlots.value = []
+    maintainingPlots.value = []
+  }
 }
 
 function onPage(page: number) {
@@ -112,12 +140,7 @@ async function loadRecommendations() {
 
 async function openCreate() {
   createVisible.value = true
-  try {
-    const data = await listPlots({ page: 1, page_size: 100 })
-    myAdoptedPlots.value = data.list.filter((p) => p.status === 'adopted').map((p) => ({ id: p.id, code: p.code, name: p.name }))
-  } catch {
-    myAdoptedPlots.value = []
-  }
+  await loadMyPlots()
 }
 
 async function submitCreate() {
@@ -144,5 +167,6 @@ async function transition(row: PlantingPlan) {
 onMounted(() => {
   fetch()
   loadRecommendations()
+  loadMyPlots()
 })
 </script>

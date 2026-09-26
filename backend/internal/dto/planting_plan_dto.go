@@ -8,12 +8,12 @@ import (
 
 // CreatePlanRequest 创建种植计划。
 type CreatePlanRequest struct {
-	PlotID   uint   `json:"plot_id" binding:"required,gt=0"`
-	CropName string `json:"crop_name" binding:"required,max=64"`
-	CropType string `json:"crop_type" binding:"required,oneof=vegetable fruit herb"`
-	Season   string `json:"season" binding:"required,oneof=spring summer autumn winter"`
+	PlotID    uint    `json:"plot_id" binding:"required,gt=0"`
+	CropName  string  `json:"crop_name" binding:"required,max=64"`
+	CropType  string  `json:"crop_type" binding:"required,oneof=vegetable fruit herb"`
+	Season    string  `json:"season" binding:"required,oneof=spring summer autumn winter"`
 	PlantDate *string `json:"plant_date" binding:"omitempty"`
-	Notes    string `json:"notes" binding:"omitempty,max=512"`
+	Notes     string  `json:"notes" binding:"omitempty,max=512"`
 }
 
 // UpdatePlanRequest 更新种植计划。
@@ -31,20 +31,20 @@ type ChangePlanStatusRequest struct {
 
 // PlanOutDTO 种植计划输出。
 type PlanOutDTO struct {
-	ID                  uint        `json:"id"`
-	PlotID              uint        `json:"plot_id"`
-	PlotCode            string      `json:"plot_code"`
-	PlotName            string      `json:"plot_name"`
-	UserID              uint        `json:"user_id"`
-	Username            string      `json:"username"`
-	CropName            string      `json:"crop_name"`
-	CropType            string      `json:"crop_type"`
-	Season              string      `json:"season"`
-	Status              string      `json:"status"`
-	PlantDate           *string     `json:"plant_date"`
-	ExpectedHarvestDate *string     `json:"expected_harvest_date"`
-	Notes               string      `json:"notes"`
-	CreatedAt           string      `json:"created_at"`
+	ID                  uint    `json:"id"`
+	PlotID              uint    `json:"plot_id"`
+	PlotCode            string  `json:"plot_code"`
+	PlotName            string  `json:"plot_name"`
+	UserID              uint    `json:"user_id"`
+	Username            string  `json:"username"`
+	CropName            string  `json:"crop_name"`
+	CropType            string  `json:"crop_type"`
+	Season              string  `json:"season"`
+	Status              string  `json:"status"`
+	PlantDate           *string `json:"plant_date"`
+	ExpectedHarvestDate *string `json:"expected_harvest_date"`
+	Notes               string  `json:"notes"`
+	CreatedAt           string  `json:"created_at"`
 }
 
 // ToPlanOutDTO 模型转 DTO。
@@ -80,18 +80,18 @@ func ToPlanOutDTO(p *model.PlantingPlan) *PlanOutDTO {
 
 // RecommendationOutDTO 季节作物推荐输出。
 type RecommendationOutDTO struct {
-	Season   string   `json:"season"`
-	Crops    []string `json:"crops"`
-	HarvestInDays int  `json:"harvest_in_days"`
+	Season        string   `json:"season"`
+	Crops         []string `json:"crops"`
+	HarvestInDays int      `json:"harvest_in_days"`
 }
 
 // AnnualStatsOutDTO 年度收成统计输出。
 type AnnualStatsOutDTO struct {
-	Year          int              `json:"year"`
-	TotalWeightKg float64          `json:"total_weight_kg"`
-	HarvestCount  int              `json:"harvest_count"`
+	Year          int                `json:"year"`
+	TotalWeightKg float64            `json:"total_weight_kg"`
+	HarvestCount  int                `json:"harvest_count"`
 	ByCropType    map[string]float64 `json:"by_crop_type"`
-	ByQuality     map[string]int   `json:"by_quality"`
+	ByQuality     map[string]int     `json:"by_quality"`
 }
 
 // ParseDate 解析 yyyy-MM-dd 日期字符串。

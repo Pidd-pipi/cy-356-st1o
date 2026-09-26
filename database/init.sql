@@ -118,6 +118,24 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- 土壤养护单：管理员对已认养地块登记土壤采样与养护处理，同一地块只能有一张未完成养护单
+CREATE TABLE IF NOT EXISTS maintenance_orders (
+    id BIGSERIAL PRIMARY KEY,
+    plot_id BIGINT NOT NULL REFERENCES plots(id),
+    operator_id BIGINT NOT NULL REFERENCES users(id),
+    sampled_at TIMESTAMPTZ,
+    ph_value DOUBLE PRECISION NOT NULL,
+    fertility_issue VARCHAR(32) NOT NULL,
+    suggestion VARCHAR(512) NOT NULL,
+    status VARCHAR(32) NOT NULL DEFAULT 'pending',
+    actual_measures VARCHAR(512),
+    completed_at TIMESTAMPTZ,
+    cancel_reason VARCHAR(512),
+    cancelled_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE INDEX IF NOT EXISTS idx_plots_status ON plots(status);
 CREATE INDEX IF NOT EXISTS idx_plans_user ON planting_plans(user_id);
 CREATE INDEX IF NOT EXISTS idx_plans_status ON planting_plans(status);
@@ -125,3 +143,8 @@ CREATE INDEX IF NOT EXISTS idx_harvest_user ON harvest_records(user_id);
 CREATE INDEX IF NOT EXISTS idx_diary_user ON diary_entries(user_id);
 CREATE INDEX IF NOT EXISTS idx_posts_type ON community_posts(post_type);
 CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_logs(username);
+CREATE INDEX IF NOT EXISTS idx_maintenance_plot ON maintenance_orders(plot_id);
+CREATE INDEX IF NOT EXISTS idx_maintenance_status ON maintenance_orders(status);
+-- 同一地块只允许一张未完成（pending/processing）养护单（并发兜底）
+CREATE UNIQUE INDEX IF NOT EXISTS uni_maintenance_active_plot
+    ON maintenance_orders (plot_id) WHERE status IN ('pending', 'processing');

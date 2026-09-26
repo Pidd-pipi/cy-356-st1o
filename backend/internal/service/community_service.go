@@ -26,11 +26,11 @@ func NewCommunityService(postRepo repository.CommunityRepository, logger *slog.L
 // Create 发布社区帖子。
 func (s *CommunityService) Create(req *dto.CreatePostRequest, userID uint) (*model.CommunityPost, error) {
 	p := &model.CommunityPost{
-		UserID:    userID,
-		Title:     req.Title,
-		Content:   req.Content,
-		PostType:  req.PostType,
-		Status:    string(constants.PostStatusPublished),
+		UserID:   userID,
+		Title:    req.Title,
+		Content:  req.Content,
+		PostType: req.PostType,
+		Status:   string(constants.PostStatusPublished),
 	}
 	if err := s.postRepo.Create(p); err != nil {
 		return nil, util.NewAppError(constants.CodeInternalError, 500, constants.ErrorText[constants.CodeInternalError]).Wrap(err)
