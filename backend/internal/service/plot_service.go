@@ -180,6 +180,38 @@ func (s *PlotService) MarkHarvested(tx *gorm.DB, plotID uint) error {
 	return s.plotRepo.UpdateWithTx(tx, plot)
 }
 
+// MarkCaring 登记养护单后将地块置为养护中（adopted -> caring），认养关系不变。
+func (s *PlotService) MarkCaring(tx *gorm.DB, plotID uint) error {
+	plot, err := s.plotRepo.FindByIDForUpdate(tx, plotID)
+	if err != nil {
+		return err
+	}
+	plot.Status = string(constants.PlotStatusCaring)
+	return s.plotRepo.UpdateWithTx(tx, plot)
+}
+
+// RestoreAdopted 养护单完成/取消后地块恢复为已认养可种植（caring -> adopted）。
+func (s *PlotService) RestoreAdopted(tx *gorm.DB, plotID uint) error {
+	plot, err := s.plotRepo.FindByIDForUpdate(tx, plotID)
+	if err != nil {
+		return err
+	}
+	if plot.Status == string(constants.PlotStatusCaring) {
+		plot.Status = string(constants.PlotStatusAdopted)
+		return s.plotRepo.UpdateWithTx(tx, plot)
+	}
+	return nil
+}
+
+// ListAdoptedPlots 查询全部可登记养护单的已认养地块（养护单 handler 复用）。
+func (s *PlotService) ListAdoptedPlots() ([]model.Plot, error) {
+	plots, err := s.plotRepo.FindAdoptedPlots()
+	if err != nil {
+		return nil, util.NewAppError(constants.CodeInternalError, 500, constants.ErrorText[constants.CodeInternalError]).Wrap(err)
+	}
+	return plots, nil
+}
+
 // CountByStatus 地块状态统计（仪表盘复用）。
 func (s *PlotService) CountByStatus() (map[string]int64, error) {
 	return s.plotRepo.CountByStatus()

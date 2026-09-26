@@ -14,6 +14,7 @@ tags:
   - name: community-posts
   - name: users
   - name: audit-logs
+  - name: soil-care-orders
 paths:
   /auth/register:
     post:
@@ -217,4 +218,45 @@ paths:
     get:
       tags: [audit-logs]
       summary: 社区实时消息 WebSocket
+      responses: { '200': { description: 成功 } }
+  /soil-care-orders:
+    get:
+      tags: [soil-care-orders]
+      summary: 土壤养护单历史列表（可按 plot_id/status 过滤；认养人仅见本人地块，管理员见全部）
+      parameters:
+        - { name: plot_id, in: query, required: false, schema: { type: integer } }
+        - { name: status, in: query, required: false, schema: { type: string, enum: [pending, in_progress, completed, cancelled] } }
+      responses: { '200': { description: 成功 } }
+    post:
+      tags: [soil-care-orders]
+      summary: 登记土壤养护单（管理员；仅已认养地块、同地块仅一张未完成单，地块进入 caring）
+      responses: { '200': { description: 成功 } }
+  /soil-care-orders/{id}:
+    get:
+      tags: [soil-care-orders]
+      summary: 养护单详情（认养人限本人地块）
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses: { '200': { description: 成功 } }
+  /soil-care-orders/{id}/start:
+    post:
+      tags: [soil-care-orders]
+      summary: 开始处理（pending -> in_progress，管理员）
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses: { '200': { description: 成功 } }
+  /soil-care-orders/{id}/complete:
+    post:
+      tags: [soil-care-orders]
+      summary: 完成养护（填写实际措施与完成日期，地块恢复可种植，管理员）
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses: { '200': { description: 成功 } }
+  /soil-care-orders/{id}/cancel:
+    post:
+      tags: [soil-care-orders]
+      summary: 取消养护（必填取消原因，地块恢复可种植，管理员）
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses: { '200': { description: 成功 } }
+  /care/plots/adopted:
+    get:
+      tags: [soil-care-orders]
+      summary: 可登记养护单的已认养地块（管理员，复用 PlotService.ListAdoptedPlots）
       responses: { '200': { description: 成功 } }

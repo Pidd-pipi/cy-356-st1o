@@ -7,11 +7,12 @@ export const RoleText: Record<string, string> = {
   citizen: '城市居民'
 }
 
-export type PlotStatus = 'available' | 'adopted' | 'harvested'
+export type PlotStatus = 'available' | 'adopted' | 'harvested' | 'caring'
 export const PlotStatusMeta: Record<string, { label: string; type: 'success' | 'warning' | 'info' | 'danger' | 'primary' }> = {
   available: { label: '空闲可认养', type: 'success' },
   adopted: { label: '已认养', type: 'warning' },
-  harvested: { label: '待释放', type: 'info' }
+  harvested: { label: '待释放', type: 'info' },
+  caring: { label: '养护中', type: 'danger' }
 }
 
 export type PlanStatus = 'planned' | 'planting' | 'growing' | 'harvesting' | 'completed'
@@ -76,6 +77,28 @@ export const HarvestQualityText: Record<string, string> = {
   excellent: '优',
   good: '良',
   fair: '一般'
+}
+
+// 土壤养护单状态机（与后端 CareStatusTransitions 对应，驱动按钮显隐）
+export type CareStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled'
+export const CareStatusMeta: Record<string, { label: string; type: 'success' | 'warning' | 'info' | 'danger' | 'primary' }> = {
+  pending: { label: '待处理', type: 'warning' },
+  in_progress: { label: '处理中', type: 'primary' },
+  completed: { label: '已完成', type: 'success' },
+  cancelled: { label: '已取消', type: 'info' }
+}
+// 当前状态可执行的动作（按钮显隐）
+export const CareStatusActions: Record<string, Array<{ action: string; label: string; type: 'primary' | 'success' | 'danger' }>> = {
+  pending: [
+    { action: 'start', label: '开始处理', type: 'primary' },
+    { action: 'cancel', label: '取消养护单', type: 'danger' }
+  ],
+  in_progress: [
+    { action: 'complete', label: '完成养护', type: 'success' },
+    { action: 'cancel', label: '取消养护单', type: 'danger' }
+  ],
+  completed: [],
+  cancelled: []
 }
 
 export const SoilTypeText: Record<string, string> = {

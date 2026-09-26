@@ -43,6 +43,24 @@ func PlotStatusText(s string) string {
 		return "已认养"
 	case constants.PlotStatusHarvested:
 		return "待释放"
+	case constants.PlotStatusCaring:
+		return "养护中"
+	default:
+		return "未知状态"
+	}
+}
+
+// CareStatusText 土壤养护单状态中文文本。
+func CareStatusText(s string) string {
+	switch constants.CareStatus(s) {
+	case constants.CareStatusPending:
+		return "待处理"
+	case constants.CareStatusInProgress:
+		return "处理中"
+	case constants.CareStatusCompleted:
+		return "已完成"
+	case constants.CareStatusCancelled:
+		return "已取消"
 	default:
 		return "未知状态"
 	}

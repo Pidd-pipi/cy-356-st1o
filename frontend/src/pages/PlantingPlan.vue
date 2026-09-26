@@ -114,7 +114,10 @@ async function openCreate() {
   createVisible.value = true
   try {
     const data = await listPlots({ page: 1, page_size: 100 })
-    myAdoptedPlots.value = data.list.filter((p) => p.status === 'adopted').map((p) => ({ id: p.id, code: p.code, name: p.name }))
+    // 仅已认养且不在养护中的地块可创建计划（养护中由后端拦截，前端同步隐藏）
+    myAdoptedPlots.value = data.list
+      .filter((p) => p.status === 'adopted')
+      .map((p) => ({ id: p.id, code: p.code, name: p.name }))
   } catch {
     myAdoptedPlots.value = []
   }

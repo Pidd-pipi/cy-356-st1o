@@ -10,12 +10,13 @@ import (
 
 // DashboardStats 仪表盘统计输出。
 type DashboardStats struct {
-	UsersByRole      map[string]int64 `json:"users_by_role"`
-	PlotsByStatus    map[string]int64 `json:"plots_by_status"`
-	PlansByStatus    map[string]int64 `json:"plans_by_status"`
-	PostsByType      map[string]int64 `json:"posts_by_type"`
-	TotalDiaries     int64            `json:"total_diaries"`
-	TotalHarvests    int64            `json:"total_harvests"`
+	UsersByRole    map[string]int64 `json:"users_by_role"`
+	PlotsByStatus  map[string]int64 `json:"plots_by_status"`
+	PlansByStatus  map[string]int64 `json:"plans_by_status"`
+	PostsByType    map[string]int64 `json:"posts_by_type"`
+	TotalDiaries   int64            `json:"total_diaries"`
+	TotalHarvests  int64            `json:"total_harvests"`
+	OpenCareOrders int64            `json:"open_care_orders"`
 }
 
 // StatsService 统计服务（聚合多个仓储，供仪表盘使用）。
@@ -26,6 +27,7 @@ type StatsService struct {
 	harvestRepo repository.HarvestRecordRepository
 	diaryRepo   repository.DiaryRepository
 	postRepo    repository.CommunityRepository
+	careRepo    repository.SoilCareOrderRepository
 	logger      *slog.Logger
 }
 
@@ -37,9 +39,10 @@ func NewStatsService(
 	harvestRepo repository.HarvestRecordRepository,
 	diaryRepo repository.DiaryRepository,
 	postRepo repository.CommunityRepository,
+	careRepo repository.SoilCareOrderRepository,
 	logger *slog.Logger,
 ) *StatsService {
-	return &StatsService{userRepo: userRepo, plotRepo: plotRepo, planRepo: planRepo, harvestRepo: harvestRepo, diaryRepo: diaryRepo, postRepo: postRepo, logger: logger}
+	return &StatsService{userRepo: userRepo, plotRepo: plotRepo, planRepo: planRepo, harvestRepo: harvestRepo, diaryRepo: diaryRepo, postRepo: postRepo, careRepo: careRepo, logger: logger}
 }
 
 // Overview 汇总仪表盘统计。
@@ -68,12 +71,17 @@ func (s *StatsService) Overview() (*DashboardStats, error) {
 	if err != nil {
 		return nil, util.NewAppError(constants.CodeInternalError, 500, constants.ErrorText[constants.CodeInternalError]).Wrap(err)
 	}
+	openCare, err := s.careRepo.CountOpen()
+	if err != nil {
+		return nil, util.NewAppError(constants.CodeInternalError, 500, constants.ErrorText[constants.CodeInternalError]).Wrap(err)
+	}
 	return &DashboardStats{
-		UsersByRole:   usersByRole,
-		PlotsByStatus: plotsByStatus,
-		PlansByStatus: plansByStatus,
-		PostsByType:   postsByType,
-		TotalDiaries:  totalDiaries,
-		TotalHarvests: totalHarvests,
+		UsersByRole:    usersByRole,
+		PlotsByStatus:  plotsByStatus,
+		PlansByStatus:  plansByStatus,
+		PostsByType:    postsByType,
+		TotalDiaries:   totalDiaries,
+		TotalHarvests:  totalHarvests,
+		OpenCareOrders: openCare,
 	}, nil
 }

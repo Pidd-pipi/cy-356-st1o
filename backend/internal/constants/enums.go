@@ -28,6 +28,7 @@ const (
 	PlotStatusAvailable PlotStatus = "available" // 空闲可认养
 	PlotStatusAdopted   PlotStatus = "adopted"   // 已认养
 	PlotStatusHarvested PlotStatus = "harvested" // 已收成待释放
+	PlotStatusCaring    PlotStatus = "caring"    // 土壤养护处理中（已认养，暂停种植）
 )
 
 // SoilType 土壤类型
@@ -117,6 +118,22 @@ const (
 	PostStatusPublished PostStatus = "published"
 	PostStatusRemoved   PostStatus = "removed"
 )
+
+// CareStatus 土壤养护单状态机：pending -> in_progress -> completed / cancelled
+type CareStatus string
+
+const (
+	CareStatusPending    CareStatus = "pending"     // 待处理（已登记采样）
+	CareStatusInProgress CareStatus = "in_progress" // 处理中
+	CareStatusCompleted  CareStatus = "completed"   // 已完成（地块恢复可种植）
+	CareStatusCancelled  CareStatus = "cancelled"   // 已取消（记录原因，地块恢复可种植）
+)
+
+// CareOpenStatuses 未完成养护单状态集合（同一地块仅允许一张）。
+var CareOpenStatuses = []string{
+	string(CareStatusPending),
+	string(CareStatusInProgress),
+}
 
 // 季节推荐作物表（静态推荐数据，服务层读取）
 var SeasonCrops = map[Season][]string{

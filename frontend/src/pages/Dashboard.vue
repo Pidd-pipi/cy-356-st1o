@@ -1,6 +1,14 @@
 <template>
   <div class="page-card">
     <h3 class="page-title">平台概览</h3>
+    <el-alert
+      v-if="(stats?.open_care_orders ?? 0) > 0"
+      :title="`当前有 ${stats?.open_care_orders} 张未完成的土壤养护单，相关地块暂停种植，可在「土壤养护」页查看进度`"
+      type="warning"
+      show-icon
+      :closable="false"
+      style="margin-bottom: 16px"
+    />
     <el-row :gutter="16">
       <el-col :span="6"><div class="stat-card"><div class="stat-num">{{ usersByRoleCount }}</div><div class="stat-label">注册用户</div></div></el-col>
       <el-col :span="6"><div class="stat-card"><div class="stat-num">{{ plotsByStatusCount }}</div><div class="stat-label">菜园地块</div></div></el-col>

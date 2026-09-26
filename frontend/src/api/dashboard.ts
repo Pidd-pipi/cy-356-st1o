@@ -7,6 +7,7 @@ export interface DashboardStats {
   posts_by_type: Record<string, number>
   total_diaries: number
   total_harvests: number
+  open_care_orders: number
 }
 
 export function getDashboardStats(): Promise<DashboardStats> {

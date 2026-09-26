@@ -39,9 +39,11 @@
       <el-table-column label="认养人" width="120">
         <template #default="{ row }">{{ row.adopter?.nickname || row.adopter?.username || '-' }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="220">
+      <el-table-column label="操作" width="280">
         <template #default="{ row }">
           <el-button v-if="row.status === 'available'" type="success" size="small" @click="adopt(row)">认养</el-button>
+          <el-button v-if="isAdmin && row.status === 'adopted'" type="danger" size="small" @click="goCare(row)">登记养护</el-button>
+          <el-button v-if="row.status === 'caring'" type="danger" size="small" plain @click="goCare(row)">查看养护</el-button>
           <el-button v-if="canRelease(row)" type="warning" size="small" @click="release(row)">释放</el-button>
         </template>
       </el-table-column>
@@ -76,6 +78,7 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { usePlotStore } from '@/stores/plot'
 import { createPlot, type Plot } from '@/api/plot'
@@ -89,6 +92,11 @@ import { formatArea, clamp } from '@/utils/format'
 const store = usePlotStore()
 const pagination = usePagination()
 const { user, role, isAdmin } = useAuth()
+const router = useRouter()
+
+function goCare(row: Plot) {
+  router.push({ path: '/soil-care', query: { plot_id: String(row.id) } })
+}
 
 const createVisible = ref(false)
 const creating = ref(false)
@@ -107,6 +115,7 @@ function mapY(p: Plot) {
 function colorOf(status: string) {
   if (status === 'available') return '#67c23a'
   if (status === 'adopted') return '#e6a23c'
+  if (status === 'caring') return '#f56c6c'
   return '#909399'
 }
 

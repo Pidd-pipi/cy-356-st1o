@@ -26,11 +26,11 @@ var PlanStatusTransitions = map[constants.PlanStatus][]constants.PlanStatus{
 
 // PlantingPlanService 种植计划服务。
 type PlantingPlanService struct {
-	planRepo  repository.PlantingPlanRepository
-	plotRepo  repository.PlotRepository
-	plotSvc   *PlotService
-	db        *gorm.DB
-	logger    *slog.Logger
+	planRepo repository.PlantingPlanRepository
+	plotRepo repository.PlotRepository
+	plotSvc  *PlotService
+	db       *gorm.DB
+	logger   *slog.Logger
 }
 
 // NewPlantingPlanService 构造种植计划服务。
@@ -48,6 +48,9 @@ func (s *PlantingPlanService) Create(req *dto.CreatePlanRequest, userID uint) (*
 				return util.NewAppError(constants.CodeNotFound, 404, fmt.Sprintf("地块实体 id=%d 不存在", req.PlotID))
 			}
 			return util.NewAppError(constants.CodeInternalError, 500, constants.ErrorText[constants.CodeInternalError]).Wrap(err)
+		}
+		if plot.Status == string(constants.PlotStatusCaring) {
+			return util.NewAppError(constants.CodePlotUnderCaring, 409, fmt.Sprintf("地块 %s 处于土壤养护期（%s），养护完成前不能创建种植计划", plot.Code, util.PlotStatusText(plot.Status)))
 		}
 		if plot.Status != string(constants.PlotStatusAdopted) || plot.AdopterID == nil || *plot.AdopterID != userID {
 			return util.NewAppError(constants.CodeForbidden, 403, fmt.Sprintf("地块 %s 未由用户 id=%d 认养，无法创建种植计划", plot.Code, userID))

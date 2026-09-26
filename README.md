@@ -28,11 +28,12 @@ docker compose up -d --build
 
 ## ✨ 主要功能
 
-1. **地块认养与 GIS 展示**：地图展示地块分布，标注空闲/已认养/待释放状态，展示面积、土壤类型、日照条件，在线认养。
-2. **种植计划与作物推荐**：认养后制定种植计划，按季节推荐适宜作物，生成预期收获时间线（蔬菜 45 天/水果 90 天/香草 35 天）。
-3. **种植日记图文记录**：按播种/浇水/施肥/除虫/收成记录种植过程，支持点赞与评论。
-4. **收成预警与采摘提醒**：近 7 天成熟作物自动提醒，记录采摘重量与品质，生成年度收成统计报表。
-5. **农友社区交流**：种植经验 / 病虫害防治 / 食谱创意 / 线下农耕活动四类帖子，实时动态 WebSocket 广播。
+1. **地块认养与 GIS 展示**：地图展示地块分布，标注空闲/已认养/待释放/养护中状态，展示面积、土壤类型、日照条件，在线认养。
+2. **种植计划与作物推荐**：认养后制定种植计划，按季节推荐适宜作物，生成预期收获时间线（蔬菜 45 天/水果 90 天/香草 35 天）。土壤养护处理期间的地块自动锁定，禁止创建新计划。
+3. **土壤养护单**：管理员为已认养地块登记采样日期、pH 值、肥力问题与处理建议；同一地块仅允许一张未完成养护单，处理中可填写进度、完成实际措施或附原因取消，地块完成/取消后恢复可种植，认养人可实时查看进度并按地块浏览历史。
+4. **种植日记图文记录**：按播种/浇水/施肥/除虫/收成记录种植过程，支持点赞与评论。
+5. **收成预警与采摘提醒**：近 7 天成熟作物自动提醒，记录采摘重量与品质，生成年度收成统计报表。
+6. **农友社区交流**：种植经验 / 病虫害防治 / 食谱创意 / 线下农耕活动四类帖子，实时动态 WebSocket 广播。
 
 ## 🛠 技术栈
 
@@ -66,7 +67,7 @@ backend/
 │   ├── middleware/             # auth / rbac / request_id / error_handler / rate_limit / audit / request_log / cors
 │   ├── constants/              # enums / error_codes / log_templates / messages
 │   ├── util/                   # logger / jwt / password / response / pagination / formatters / app_error / context
-│   └── ws/hub.go               # WebSocket 社区实时广播
+│   ├── ws/hub.go               # WebSocket 社区实时广播
 ├── migrations/                 # 迁移脚本
 ├── api/openapi.yaml            # OpenAPI 接口文档
 ├── Dockerfile                  # Go 多阶段构建
@@ -102,6 +103,7 @@ README.md
 | 收成记录 HarvestRecord | `harvest_records` | `model/harvest_record.go`、`repository/harvest_record_repository.go`、`service/harvest_record_service.go`、`handler/harvest_handler.go`、`router/harvest.go` | `api/harvest.ts`、`pages/Harvest.vue` |
 | 种植日记 DiaryEntry | `diary_entries` / `diary_comments` | `model/diary_entry.go`、`repository/diary_entry_repository.go`、`service/diary_service.go`、`handler/diary_handler.go`、`router/diary.go` | `api/diary.ts`、`stores/diary.ts`、`pages/Diary.vue` |
 | 社区帖子 CommunityPost | `community_posts` / `community_comments` | `model/community_post.go`、`repository/community_post_repository.go`、`service/community_service.go`、`handler/community_handler.go`、`router/community.go` | `api/community.ts`、`stores/community.ts`、`pages/Community.vue` |
+| 土壤养护单 SoilCareOrder | `soil_care_orders` | `model/soil_care_order.go`、`repository/soil_care_order_repository.go`、`service/soil_care_service.go`、`handler/soil_care_handler.go`、`router/soil_care.go` | `api/soilCare.ts`、`stores/soilCare.ts`、`pages/SoilCare.vue` |
 
 > 审计日志 AuditLog 作为横切关注点实体：`model/audit_log.go` → `repository/audit_repository.go` → `service/audit_service.go` → `handler/audit_handler.go` → `router/audit.go` → 前端 `api/audit.ts`、`pages/Audit.vue`。
 
@@ -116,7 +118,8 @@ README.md
 | 枚举 | 取值 | 后端出现位置 |
 | --- | --- | --- |
 | RoleType 角色 | admin / farmer / citizen | `constants/enums.go`、`model/user.go`、`dto/user_dto.go`、`service/user_service.go`（ChangeRole 校验）、`middleware/rbac.go`、`middleware/audit.go`、`handler/planting_plan_handler.go`、`handler/harvest_handler.go`、`handler/diary_handler.go`、`util/formatters.go`、`log_templates.go`、`error_codes.go`、`database/database.go`（种子数据） |
-| PlotStatus 地块状态 | available / adopted / harvested | `constants/enums.go`、`model/plot.go`、`dto/plot_dto.go`、`service/plot_service.go`（认养/释放状态机）、`repository/plot_repository.go`（过滤）、`util/formatters.go`、`log_templates.go`、`database/database.go`（种子数据）、`api/openapi.yaml` |
+| PlotStatus 地块状态 | available / adopted / harvested / caring | `constants/enums.go`、`model/plot.go`、`dto/plot_dto.go`、`service/plot_service.go`（认养/释放/MarkCaring/RestoreAdopted 状态机）、`repository/plot_repository.go`（过滤）、`service/planting_plan_service.go`（养护期拦截建计划）、`util/formatters.go`、`log_templates.go`、`database/database.go`（种子数据）、`api/openapi.yaml`、前端 `constants/index.ts`（PlotStatusMeta）、`pages/PlotMap.vue`、`pages/Dashboard.vue` |
+| CareStatus 养护单状态 | pending / in_progress / completed / cancelled | `constants/enums.go`（CareOpenStatuses）、`model/soil_care_order.go`、`dto/soil_care_order_dto.go`（oneof/必填校验）、`service/soil_care_service.go`（CareStatusTransitions 状态机）、`handler/soil_care_handler.go`、`router/soil_care.go`（RBAC）、`util/formatters.go`（CareStatusText）、`log_templates.go`、`error_codes.go`（CodeCareOpenOrderExists/CodePlotUnderCaring/CodeCareStateNotAllowed/CodeCareCancelReason/CodePlotNotAdopted）、`database/database.go`（种子数据）、`api/openapi.yaml`、前端 `constants/index.ts`（CareStatusMeta/CareStatusActions 按钮显隐）、`pages/SoilCare.vue` |
 | PlanStatus 种植计划状态 | planned / planting / growing / harvesting / completed | `constants/enums.go`、`model/planting_plan.go`、`dto/planting_plan_dto.go`（oneof 校验）、`service/planting_plan_service.go`（PlanStatusTransitions 状态机）、`handler/planting_plan_handler.go`、`util/formatters.go`、`log_templates.go`、`error_codes.go`（CodePlanStateNotAllowed）、`database/database.go`（种子数据）、前端 `constants/index.ts`（PlanStatusMeta / PlanStatusNext 按钮显隐） |
 | CropType 作物类型 | vegetable / fruit / herb | `constants/enums.go`、`model/planting_plan.go`、`dto/planting_plan_dto.go`、`service/planting_plan_service.go`（成熟时间估算）、`util/formatters.go`、`repository/harvest_record_repository.go`（分组统计）、`database/database.go` |
 | Season 季节 | spring / summer / autumn / winter | `constants/enums.go`、`dto/planting_plan_dto.go`、`service/planting_plan_service.go`（SeasonCrops 推荐表）、`util/formatters.go`、`database/database.go`、前端 `pages/PlantingPlan.vue`、`pages/Dashboard.vue` |
@@ -196,6 +199,19 @@ README.md
 | POST | `/community-posts/:id/like` | 点赞 | 登录 |
 | POST | `/community-posts/:id/comments` | 评论 | 登录 |
 
+### 土壤养护单
+| 方法 | 路径 | 说明 | 鉴权 |
+| --- | --- | --- | --- |
+| GET | `/soil-care-orders` | 养护单历史列表（可 `?plot_id=&status=` 过滤；认养人仅见本人地块，管理员见全部） | 登录 |
+| POST | `/soil-care-orders` | 登记养护单（采样日期/pH/肥力问题/处理建议；同地块仅一张未完成单，地块转养护中） | 管理员 |
+| GET | `/soil-care-orders/:id` | 养护单详情（认养人限本人地块） | 登录 |
+| POST | `/soil-care-orders/:id/start` | 开始处理（pending → in_progress） | 管理员 |
+| POST | `/soil-care-orders/:id/complete` | 完成养护（实际措施 + 完成日期，地块恢复可种植） | 管理员 |
+| POST | `/soil-care-orders/:id/cancel` | 取消养护（必填取消原因，地块恢复可种植） | 管理员 |
+| GET | `/care/plots/adopted` | 可登记养护单的已认养地块（复用 `PlotService.ListAdoptedPlots`） | 管理员 |
+
+> 养护处理期间（地块 `caring`）创建种植计划 `POST /planting-plans` 返回错误码 `2011 CodePlotUnderCaring`；同一地块重复登记未完成养护单返回 `2010 CodeCareOpenOrderExists`。
+
 ### 其他
 | 方法 | 路径 | 说明 | 鉴权 |
 | --- | --- | --- | --- |
@@ -207,6 +223,7 @@ README.md
 - `GET /stats/annual`（收成统计接口）与 `GET /planting-plans/stats`（种植计划统计）**复用同一个 service 方法** `HarvestRecordService.AnnualStats`。
 - `GET /plots/:id`（地块详情接口）与创建种植计划 `POST /planting-plans` **复用同一个 service 方法** `PlotService.GetByID`。
 - 分页 `util.Paginate` 被全部 repository 复用；`ListByUser` 系列仓储方法被计划/收成列表接口复用。
+- `GET /care/plots/adopted`（养护登记地块下拉）与地块列表/详情**复用同一个 service 方法族** `PlotService.ListAdoptedPlots` / `GetByID`；养护单 service 在事务内复用 `PlotService.MarkCaring` / `RestoreAdopted` 切换地块状态。
 
 ## 🔌 API 调用示例（curl，含 JWT 请求头）
 
@@ -241,6 +258,21 @@ curl -s "http://localhost:29516/api/v1/stats/annual?year=2026" \
 
 # 8. 审计日志（管理员）
 curl -s "http://localhost:29516/api/v1/audit-logs" \
+  -H "Authorization: Bearer $TOKEN"
+
+# 9. 登记土壤养护单（管理员：采样日期 / pH / 肥力问题 / 处理建议）
+curl -s -X POST http://localhost:29516/api/v1/soil-care-orders \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"plot_id":2,"sampled_date":"2026-09-26","ph_value":5.6,"fertility_issue":"连作后有机质下降、局部板结","treatment_advice":"增施堆肥并深翻"}'
+
+# 10. 开始处理 / 完成养护（实际措施 + 完成日期）
+curl -s -X POST http://localhost:29516/api/v1/soil-care-orders/1/start -H "Authorization: Bearer $TOKEN"
+curl -s -X POST http://localhost:29516/api/v1/soil-care-orders/1/complete \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"actual_measures":"深翻20cm并施入腐熟堆肥5kg","completed_date":"2026-09-26"}'
+
+# 11. 按地块查看养护历史（认养人仅能看到自己地块的进度）
+curl -s "http://localhost:29516/api/v1/soil-care-orders?plot_id=2" \
   -H "Authorization: Bearer $TOKEN"
 ```
 

@@ -18,5 +18,9 @@ const (
 	MsgAuditListOK      = "审计日志查询成功"
 	MsgRecommendOK      = "季节作物推荐获取成功"
 	MsgStatsOK          = "年度收成统计获取成功"
+	MsgCareCreatedOK    = "土壤养护单已登记，地块进入养护处理期"
+	MsgCareStartedOK    = "养护单已开始处理"
+	MsgCareCompletedOK  = "养护已完成，地块恢复可种植"
+	MsgCareCancelledOK  = "养护单已取消，地块恢复可种植"
 	MsgHealthOK         = "服务运行正常"
 )

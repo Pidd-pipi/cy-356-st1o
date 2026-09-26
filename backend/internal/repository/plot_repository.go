@@ -20,6 +20,7 @@ type PlotRepository interface {
 	FindByCode(code string) (*model.Plot, error)
 	List(pq util.PageQuery, status string) ([]model.Plot, int64, error)
 	CountByStatus() (map[string]int64, error)
+	FindAdoptedPlots() ([]model.Plot, error)
 }
 
 type plotRepository struct {
@@ -92,6 +93,15 @@ func (r *plotRepository) List(pq util.PageQuery, status string) ([]model.Plot, i
 		return nil, 0, err
 	}
 	return plots, total, nil
+}
+
+// FindAdoptedPlots 查询全部已认养且不在养护中的地块（登记养护单下拉数据）。
+func (r *plotRepository) FindAdoptedPlots() ([]model.Plot, error) {
+	var plots []model.Plot
+	if err := r.db.Where("status = ?", "adopted").Preload("Adopter").Order("id ASC").Find(&plots).Error; err != nil {
+		return nil, err
+	}
+	return plots, nil
 }
 
 func (r *plotRepository) CountByStatus() (map[string]int64, error) {

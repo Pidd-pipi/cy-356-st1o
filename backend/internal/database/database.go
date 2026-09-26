@@ -27,6 +27,7 @@ var Models = []interface{}{
 	&model.DiaryComment{},
 	&model.CommunityPost{},
 	&model.CommunityComment{},
+	&model.SoilCareOrder{},
 	&model.AuditLog{},
 }
 
@@ -146,6 +147,41 @@ func Seed(db *gorm.DB, logger *slog.Logger) error {
 		if err := db.Create(&seedComments[i]).Error; err != nil {
 			return err
 		}
+	}
+
+	// 土壤养护单演示：P-002 上一张已完成的历史单 + 一张待处理的开放单（地块进入养护中）。
+	histSampled := now.AddDate(0, 0, -60)
+	histCompleted := now.AddDate(0, 0, -48)
+	historyCare := model.SoilCareOrder{
+		PlotID:          seedPlots[1].ID,
+		AdminID:         seedUsers[0].ID,
+		Status:          string(constants.CareStatusCompleted),
+		SampledDate:     histSampled,
+		PHValue:         5.2,
+		FertilityIssue:  "土壤偏酸、速效磷不足",
+		TreatmentAdvice: "撒施生石灰调酸，追施腐熟羊粪与骨粉补充磷素",
+		ActualMeasures:  "每平米撒生石灰 80g 旋耕入土，追施腐熟羊粪 3kg 与骨粉 200g，浇水静养两周",
+		CompletedDate:   &histCompleted,
+	}
+	if err := db.Create(&historyCare).Error; err != nil {
+		return err
+	}
+	openSampled := now.AddDate(0, 0, -2)
+	openCare := model.SoilCareOrder{
+		PlotID:          seedPlots[1].ID,
+		AdminID:         seedUsers[0].ID,
+		Status:          string(constants.CareStatusPending),
+		SampledDate:     openSampled,
+		PHValue:         5.6,
+		FertilityIssue:  "连作后有机质下降，局部板结",
+		TreatmentAdvice: "增施有机肥与堆肥，深翻打破板结层，必要时轮作豆科绿肥",
+	}
+	if err := db.Create(&openCare).Error; err != nil {
+		return err
+	}
+	if err := db.Model(&model.Plot{}).Where("id = ?", seedPlots[1].ID).
+		Update("status", string(constants.PlotStatusCaring)).Error; err != nil {
+		return err
 	}
 
 	logger.Info(constants.LogDBSeedDone, "users", len(seedUsers), "plots", len(seedPlots))
